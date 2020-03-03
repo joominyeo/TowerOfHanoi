@@ -1,4 +1,4 @@
-move_ccw(n,x,A,C):
+ void move_ccw( int n, int x, int A, int C):
 	if (n>1){
 		move_ccw(n-1,x,A,C);
 		move_cw(1,x,A,B);
@@ -6,8 +6,8 @@ move_ccw(n,x,A,C):
 		move_cw(1,x,B,C);
 		move_ccw(n-1,x,A,C);
 		n=n-1;
-		};
+		}
 	else if (n=1){
 		move_cw(1,x,A,B);
 		move_cw(1,x,B,C);
-		};
+		}

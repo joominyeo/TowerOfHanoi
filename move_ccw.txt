@@ -6,8 +6,16 @@
 		move_cw(1,x,B,C);
 		move_ccw(n-1,x,A,C);
 		n=n-1;
+		return n;
+		return x;
+		return A;
+		return C;
 		}
 	else if (n=1){
 		move_cw(1,x,A,B);
 		move_cw(1,x,B,C);
+		return n;
+		return x;
+		return A;
+		return C;
 		}

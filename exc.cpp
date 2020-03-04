@@ -29,7 +29,10 @@ int main() {
 		ccwval = ccw(x);
 		cout << "For n = " << x << "\n";
 		//cout << "\tcw steps: " << cwcounter << "\tccw steps: " << ccwcounter << "\n";
-		cout << "\tcw: " << cwval << "\tccw: " << ccwval << "\n";
+		if (x < 8) //for output formatting purposes
+			cout << "\tcw: " << cwval << "\t\tccw: " << ccwval << "\n";
+		else
+			cout << "\tcw: " << cwval << "\tccw: " << ccwval << "\n";
 	}
 	return 0;
 }

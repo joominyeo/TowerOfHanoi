@@ -43,7 +43,6 @@ loop:   addi    x19, x19, #8
 chanoi:	add 	x15, xzr, x4
 		
 
-
 movecw:	subi 	sp, sp, #64
 		stur 	fp, [sp, #0]
 		addi 	fp, sp, #56
@@ -55,11 +54,13 @@ movecw:	subi 	sp, sp, #64
 
 		subi 	xzr, x15, #1
 		b.le 	decide
-		subi 	x15, x15, #1
 
+		subi 	x15, x15, #1
 		bl 		moveccw
+
 		addi 	x15, xzr, #1
 		bl 		movecw
+
 		ldur 	x15, [fp, #0]
 		subi 	x15, x15, #1
 		add 	x11, x12, xzr
@@ -67,6 +68,7 @@ movecw:	subi 	sp, sp, #64
 		add 	x13, x14, xzr
 		add 	x14, x11, xzr
 		bl 		moveccw
+		b 		donecw
 		
 
 decide:	cbnz 	x12, moveAB

@@ -125,6 +125,8 @@ moveccw:subi 	sp, sp, #64
 		stur 	x13, [fp, #-16]
 		stur 	x14, [fp, #-24]
 
+		subi 	xzr, x15, #1
+		b.le 	twocw
 
 		subi	x15, x15, #1
 		bl 		moveccw
@@ -156,7 +158,16 @@ moveccw:subi 	sp, sp, #64
 		bl 		moveccw
 		b 		doneccw
 
-doneccw: ldur 	lr, [fp, #-48]
+twocw: 	bl 		movecw
+		
+		add 	x11, x12, xzr
+		add 	x12, x14, xzr
+		add 	x14, x13, xzr
+		add 	x13, x11, xzr
+		bl 		movecw
+		b 		doneccw
+
+doneccw:ldur 	lr, [fp, #-48]
 		ldur 	x12 [fp, #-8]
 		ldur 	x13 [fp, #-16]
 		ldur 	x14 [fp, #-24]

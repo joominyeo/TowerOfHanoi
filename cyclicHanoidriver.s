@@ -9,7 +9,7 @@
         eor 	x11, x11, x11 //placeholder for switching A,B,C
         eor 	x12, x12, x12
         addi 	x12, x12, #1 //regulates if next movecw is from A
-        eor 	x13, x13, z13 //regulates if next movecw is from B
+        eor 	x13, x13, x13 //regulates if next movecw is from B
         eor 	x14, x14, x14 //regulates if next movecw is from C
         eor 	x16, x16, x16
         eor 	x17, x17, x17
@@ -40,10 +40,11 @@ loop:   addi    x19, x19, #8
         bl      chanoi
         stop
 
-chanoi:	add 	x15, xzr, x4
-		
+chanoi:		add 	x15, xzr, x4
+		bl	movecw
+		stop
 
-movecw:	subi 	sp, sp, #64
+movecw:		subi 	sp, sp, #64
 		stur 	fp, [sp, #0]
 		addi 	fp, sp, #56
 		stur 	lr, [fp, #-48]
@@ -51,11 +52,10 @@ movecw:	subi 	sp, sp, #64
 		stur 	x12, [fp, #-8]
 		stur 	x13, [fp, #-16]
 		stur 	x14, [fp, #-24]
-
-		subi 	xzr, x15, #1
-		b.le 	decide
-
+		
 		subi 	x15, x15, #1
+		cbz	x15, decide
+
 		bl 		moveccw
 
 		addi 	x15, xzr, #1
@@ -71,13 +71,13 @@ movecw:	subi 	sp, sp, #64
 		b 		donecw
 		
 
-decide:	cbnz 	x12, moveAB
+decide:		cbnz 	x12, moveAB
 		cbnz 	x13, moveBC
 		cbnz 	x14, moveCA
 
-moveAB:	ldur 	x16, [x19, #0]
+moveAB:		ldur 	x16, [x19, #0]
 		ldur 	x17, [x20, #0]
-		subi 	x31, x16, x17
+		sub 	x31, x16, x17
 		b.hi 	error
 		addi 	x20, x20, #8
 		stur 	x16, [x20, #0]
@@ -86,9 +86,9 @@ moveAB:	ldur 	x16, [x19, #0]
 		addi 	x2, x2, #1
 		b 		donecw
 		
-moveBC:	ldur 	x16, [x20, #0]
+moveBC:		ldur 	x16, [x20, #0]
 		ldur 	x17, [x21, #0]
-		subi 	x31, x16, x17
+		sub 	x31, x16, x17
 		b.hi 	error
 		addi 	x21, x21, #8
 		stur 	x16, [x21, #0]
@@ -97,9 +97,9 @@ moveBC:	ldur 	x16, [x20, #0]
 		addi 	x2, x2, #1
 		b 		donecw
 
-moveCA:	ldur 	x16, [x21, #0]
+moveCA:		ldur 	x16, [x21, #0]
 		ldur 	x17, [x19, #0]
-		subi 	x31, x16, x17
+		sub 	x31, x16, x17
 		b.hi 	error
 		addi 	x19, x19, #8
 		stur 	x16, [x19, #0]
@@ -108,7 +108,7 @@ moveCA:	ldur 	x16, [x21, #0]
 		addi 	x2, x2, #1
 		b 		donecw
 
-donecw: ldur 	lr, [fp, #-48]
+donecw:		ldur 	lr, [fp, #-48]
 		ldur 	x12 [fp, #-8]
 		ldur 	x13 [fp, #-16]
 		ldur 	x14 [fp, #-24]
@@ -118,7 +118,7 @@ donecw: ldur 	lr, [fp, #-48]
 
 
 
-moveccw:subi 	sp, sp, #64
+moveccw:	subi 	sp, sp, #64
 		stur 	fp, [sp, #0]
 		addi 	fp, sp, #56
 		stur 	lr, [fp, #-48]
@@ -127,10 +127,9 @@ moveccw:subi 	sp, sp, #64
 		stur 	x13, [fp, #-16]
 		stur 	x14, [fp, #-24]
 
-		subi 	xzr, x15, #1
-		b.le 	twocw
-
 		subi	x15, x15, #1
+		cbz	x15, twocw
+
 		bl 		moveccw
 
 		addi 	x15, xzr, #1
@@ -158,39 +157,19 @@ moveccw:subi 	sp, sp, #64
 		ldur 	x15, [fp, #0]
 		subi 	x15, x15, #1
 		bl 		moveccw
-		b 		doneccw
+		b 		donecw
 
-twocw: 	bl 		movecw
+twocw:		addi	x15, x15, #1
+		bl 		movecw
 		
 		add 	x11, x12, xzr
 		add 	x12, x14, xzr
 		add 	x14, x13, xzr
 		add 	x13, x11, xzr
+		addi	x15, x15, #1
 		bl 		movecw
-		b 		doneccw
+		b 		donecw
 
-doneccw:ldur 	lr, [fp, #-48]
-		ldur 	x12 [fp, #-8]
-		ldur 	x13 [fp, #-16]
-		ldur 	x14 [fp, #-24]
-		ldur 	fp, [fp, #-56]
-		addi 	sp, sp, #64
-		br 		lr
-
-		
-
-////////////////////////////////////
-//
-// Your code
-//
-////////////////////////////////////
-
-
-// moving one item from one stack to the next
-// call each as needed (thinking like branch with link)
-
-
-	
 
 error:  subi    x2, xzr, #1         // return -1 if error
         br      lr

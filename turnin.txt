@@ -8,9 +8,9 @@
         eor     x2, x2, x2
         eor 	x11, x11, x11 //placeholder for switching A,B,C
         eor 	x12, x12, x12
-        addi 	x12, x12, #1 //regulates if next movecw is from A
-        eor 	x13, x13, x13 //regulates if next movecw is from B
-        eor 	x14, x14, x14 //regulates if next movecw is from C
+        addi 	x12, x12, #1  //regulates if next move is from A - always starts moving from A
+        eor 	x13, x13, x13 //regulates if next move is from B
+        eor 	x14, x14, x14 //regulates if next move is from C
         eor 	x16, x16, x16
         eor 	x17, x17, x17
 
@@ -44,7 +44,7 @@ chanoi:		add 	x15, xzr, x4
 		bl	movecw
 		stop
 
-movecw:		subi 	sp, sp, #64
+movecw:		subi 	sp, sp, #64	//allocates stack and saves important values
 		stur 	fp, [sp, #0]
 		addi 	fp, sp, #56
 		stur 	lr, [fp, #-48]
@@ -53,17 +53,17 @@ movecw:		subi 	sp, sp, #64
 		stur 	x13, [fp, #-16]
 		stur 	x14, [fp, #-24]
 		
-		subi 	x15, x15, #1
+		subi 	x15, x15, #1	//if n=1, branch to moving one value
 		cbz	x15, decide
 
-		bl 		moveccw
+		bl 		moveccw`//if n>1, continue with move_cw
 
 		addi 	x15, xzr, #1
 		bl 		movecw
 
 		ldur 	x15, [fp, #0]
 		subi 	x15, x15, #1
-		add 	x11, x12, xzr
+		add 	x11, x12, xzr	//tell the next call of moveccw to move from c not a
 		add 	x12, x13, xzr
 		add 	x13, x14, xzr
 		add 	x14, x11, xzr
@@ -71,13 +71,13 @@ movecw:		subi 	sp, sp, #64
 		b 		donecw
 		
 
-decide:		cbnz 	x12, moveAB
+decide:		cbnz 	x12, moveAB 	//branch to moving a value base on x12, x13, x14
 		cbnz 	x13, moveBC
 		cbnz 	x14, moveCA
 
-moveAB:		ldur 	x16, [x19, #0]
+moveAB:		ldur 	x16, [x19, #0] 	//move item from stack a to stack b
 		ldur 	x17, [x20, #0]
-		sub 	x31, x16, x17
+		sub 	x31, x16, x17	//error checking
 		b.hi 	error
 		addi 	x20, x20, #8
 		stur 	x16, [x20, #0]
@@ -86,7 +86,7 @@ moveAB:		ldur 	x16, [x19, #0]
 		addi 	x2, x2, #1
 		b 		donecw
 		
-moveBC:		ldur 	x16, [x20, #0]
+moveBC:		ldur 	x16, [x20, #0]	//move item from stack b to stack c
 		ldur 	x17, [x21, #0]
 		sub 	x31, x16, x17
 		b.hi 	error
@@ -97,7 +97,7 @@ moveBC:		ldur 	x16, [x20, #0]
 		addi 	x2, x2, #1
 		b 		donecw
 
-moveCA:		ldur 	x16, [x21, #0]
+moveCA:		ldur 	x16, [x21, #0] 	//move item from stack c to stack a
 		ldur 	x17, [x19, #0]
 		sub 	x31, x16, x17
 		b.hi 	error
@@ -108,7 +108,7 @@ moveCA:		ldur 	x16, [x21, #0]
 		addi 	x2, x2, #1
 		b 		donecw
 
-donecw:		ldur 	lr, [fp, #-48]
+donecw:		ldur 	lr, [fp, #-48]	//reinstate old values and pop stack
 		ldur 	x12 [fp, #-8]
 		ldur 	x13 [fp, #-16]
 		ldur 	x14 [fp, #-24]
@@ -118,7 +118,7 @@ donecw:		ldur 	lr, [fp, #-48]
 
 
 
-moveccw:	subi 	sp, sp, #64
+moveccw:	subi 	sp, sp, #64	//allocate stack for move_ccw
 		stur 	fp, [sp, #0]
 		addi 	fp, sp, #56
 		stur 	lr, [fp, #-48]
@@ -127,15 +127,15 @@ moveccw:	subi 	sp, sp, #64
 		stur 	x13, [fp, #-16]
 		stur 	x14, [fp, #-24]
 
-		subi	x15, x15, #1
+		subi	x15, x15, #1	//if n=1, just move_cw twice
 		cbz	x15, twocw
 
-		bl 		moveccw
+		bl 		moveccw 	//if n>1, continue with n=1
 
 		addi 	x15, xzr, #1
 		bl 		movecw
 
-		add 	x11, x12, xzr
+		add 	x11, x12, xzr		//moving around x12,x13,x14 to show a different starting stack
 		add 	x12, x13, xzr
 		add 	x13, x14, xzr
 		add 	x14, x11, xzr
@@ -157,9 +157,9 @@ moveccw:	subi 	sp, sp, #64
 		ldur 	x15, [fp, #0]
 		subi 	x15, x15, #1
 		bl 		moveccw
-		b 		donecw
+		b 		donecw		//donecw and doneccw were identical so i just went with donecw
 
-twocw:		addi	x15, x15, #1
+twocw:		addi	x15, x15, #1		//a double clockwise move for a single counterclockwise
 		bl 		movecw
 		
 		add 	x11, x12, xzr
@@ -168,7 +168,7 @@ twocw:		addi	x15, x15, #1
 		add 	x13, x11, xzr
 		addi	x15, x15, #1
 		bl 		movecw
-		b 		donecw
+		b 		donecw		
 
 
 error:  subi    x2, xzr, #1         // return -1 if error
